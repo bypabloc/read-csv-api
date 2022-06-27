@@ -1,9 +1,23 @@
 import base64
 import csv as csv_lib
 
+from datetime import datetime
 from app import app
 from app import json
 from app import request
+
+
+def is_float(value) -> bool or float:
+    if value is None:
+        return False
+    if value == '':
+        return False
+    if value == 'NaN':
+        return False
+    try:
+        return float(value)
+    except ValueError:
+        return False
 
 
 def read_csv():
@@ -38,20 +52,27 @@ def read_csv():
 
     headers = data[0]
     data = data[1:]
-    data_dict = {}
+    data_for_graphs = {}
     for i in range(0, len(headers)):
-        data_dict[headers[i]] = {
-            'data': [],
-            'time': [],
+        data_for_graphs[headers[i]] = {
+            'values': [],
+            'datetime': [],
         }
         for j in range(0, len(data)):
-            data_dict[headers[i]]['time'].append(data[j][0] + " " + data[j][1])
-            data_dict[headers[i]]['data'].append(data[j][i+2])
+            value = is_float(data[j][i+2])
+            if value:
+                datetime_string = data[j][0] + " " + data[j][1]
+                datetime_string = datetime_string.replace('.', '/', 2)
+                datetime_obj = datetime.strptime(datetime_string, '%d/%m/%Y %H:%M:%S.%f')
+                datetime_string = datetime_obj.strftime('%Y-%m-%d %H:%M:%S')
+
+                data_for_graphs[headers[i]]['datetime'].append(datetime_string)
+                data_for_graphs[headers[i]]['values'].append(value)
 
     response = app.response_class(
         response=json.dumps({
             'data': {
-                'data': data_dict,
+                'data_for_graphs': data_for_graphs,
             },
             'message': 'Csv readed',
         }),
