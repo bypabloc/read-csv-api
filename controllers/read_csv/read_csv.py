@@ -51,8 +51,6 @@ def read_csv():
                 data.append(row[2:-1])
             continue
         data.append(row)
-        if i == 50:
-            pass
 
     headers = data[0]
     data = data[1:-2]
