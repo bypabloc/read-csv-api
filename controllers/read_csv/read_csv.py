@@ -6,6 +6,8 @@ from app import app
 from app import json
 from app import request
 
+from flask_cors import cross_origin
+
 
 def is_float(value) -> bool or float:
     if value is None:
@@ -20,21 +22,36 @@ def is_float(value) -> bool or float:
         return float(0)
 
 
+@cross_origin(origin='*', methods=['POST'])
 def read_csv():
     body = request.get_json()
     csv = body.get('csv')
     if csv is None:
-        return json.dumps({
-            'message': 'No csv provided',
-            'status': 'error',
-        })
+        return app.response_class(
+            response=json.dumps({
+                'data': {
+                },
+                'error': {
+                    'message': 'No csv provided',
+                },
+            }),
+            status=422,
+            mimetype='application/json'
+        )
 
     csv_base64_content = csv.split('data:text/csv;base64,', 1)
     if len(csv_base64_content) != 2:
-        return json.dumps({
-            'message': 'Invalid csv provided',
-            'status': 'error',
-        })
+        return app.response_class(
+            response=json.dumps({
+                'data': {
+                },
+                'error': {
+                    'message': 'No csv provided',
+                },
+            }),
+            status=422,
+            mimetype='application/json'
+        )
 
     csv_base64_content = csv_base64_content[1]
     decoded = base64.standard_b64decode(csv_base64_content).decode('latin-1')
@@ -72,7 +89,7 @@ def read_csv():
         for j in range(0, len(data)):
             data_for_graphs[header].append(is_float(data[j][i+2]))
 
-    response = app.response_class(
+    return app.response_class(
         response=json.dumps({
             'data': {
                 'data_for_graphs': data_for_graphs,
@@ -83,4 +100,3 @@ def read_csv():
         status=200,
         mimetype='application/json'
     )
-    return response

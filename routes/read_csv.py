@@ -9,4 +9,5 @@ def index():
 
 app.add_url_rule('/', view_func=index, methods=['GET'])
 
-app.add_url_rule('/read-csv', view_func=read_csv, methods=['POST'])
+
+app.add_url_rule('/v1/read-csv', view_func=read_csv, methods=['POST'])
